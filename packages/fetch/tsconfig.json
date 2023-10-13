@@ -1,3 +1,10 @@
 {
-  "extends": "./tsconfig.base.json"
+  "extends": "@tsconfig/strictest/tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "lib": ["ES2023", "DOM"],
+    "outDir": "lib"
+  },
+  "include": ["src"]
 }

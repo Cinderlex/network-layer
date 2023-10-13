@@ -1,18 +1,19 @@
 {
   "name": "@network-layer/fetch",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.1",
   "description": "Typesafe fetch wrapper",
   "sideEffects": false,
   "author": "Cinderlex <cinderlex@pm.me>",
   "license": "MIT",
   "main": "lib/index.js",
+  "module": "lib/index.mjs",
   "types": "lib/index.d.ts",
   "files": [
     "lib/**/*.js",
     "lib/**/*.d.ts"
   ],
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.types.json"
+    "build": "vite build"
   },
   "repository": {
     "type": "git",
@@ -33,6 +34,9 @@
   },
   "devDependencies": {
     "@tsconfig/strictest": "^2.0.2",
-    "typescript": "^5.2.2"
+    "@types/node": "^20",
+    "typescript": "^5.2.2",
+    "vite": "^4.4.11",
+    "vite-plugin-dts": "^3.6.0"
   }
 }
