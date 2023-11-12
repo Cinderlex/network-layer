@@ -1,0 +1,65 @@
+name: publish
+on:
+  release:
+    types: [published]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      - shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+      - uses: actions/cache@v3
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: ${{ runner.os }}-pnpm-store-
+      - run: |
+          pnpm install --frozen-lockfile
+      - name: get package
+        id: package
+        run: |
+          echo "::set-output name=package::$(echo '${{ github.event.release.tag_name }}' | cut -d '/' -f 1)"
+      - name: pnpm run build
+        working-directory: packages/${{ steps.package.outputs.package }}
+        run: |
+          pnpm run build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: build
+          path: packages/${{ steps.package.outputs.package }}/lib
+          retention-days: 1
+  publish:
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 8
+          run_install: false
+      - name: get package
+        id: package
+        run: |
+          echo "::set-output name=package::$(echo '${{ github.event.release.tag_name }}' | cut -d '/' -f 1)"
+      - uses: actions/download-artifact@v3
+        with:
+          name: build
+          path: packages/${{ steps.package.outputs.package }}/lib
+      - name: pnpm publish
+        working-directory: packages/${{ steps.package.outputs.package }}
+        run: |
+          pnpm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
